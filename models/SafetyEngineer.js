@@ -13,7 +13,6 @@ const SafetyEngineer = sequelize.define(
     email: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: true,
     },
     professional_degree: {
       type: DataTypes.STRING,

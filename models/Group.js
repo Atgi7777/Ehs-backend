@@ -9,26 +9,30 @@ const Group = sequelize.define('Group', {
     type: DataTypes.STRING,
     allowNull: false,
   },
+  activity: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
   work_description: {
     type: DataTypes.STRING,
+    allowNull: false,
+  },
+  work_detail: {
+    type: DataTypes.STRING, 
     allowNull: false,
   },
   status: {
     type: DataTypes.ENUM('active', 'inactive'),
     defaultValue: 'active',
   },
-  created_at: {
-    type: DataTypes.DATE,
-    defaultValue: Sequelize.NOW,
-  },
-  updated_at: {
-    type: DataTypes.DATE,
-    defaultValue: Sequelize.NOW,
-  },
   profile: {
-    type: DataTypes.JSON, // or STRING if you prefer plain text
+    type: DataTypes.JSON,
     allowNull: true,
   }
+}, {
+  
+  timestamps: true,      // createdAt, updatedAt автоматаар үүсгэнэ
+  underscored: true,     // created_at, updated_at гэж нэрлэх болно
 });
 
 Group.belongsTo(SafetyEngineer, {

@@ -1,4 +1,7 @@
 // models/index.js
+const Sequelize = require('sequelize');
+const sequelize = require('../config/database');
+
 const SystemAdmin = require('./SystemAdmin');
 const OrganizationAdmin = require('./OrganizationAdmin');
 const SafetyEngineer = require('./SafetyEngineer');
@@ -6,36 +9,39 @@ const Group = require('./Group');
 const SafetyInstruction = require('./SafetyInstruction');
 const GroupInstruction = require('./GroupInstruction');
 const EmployeeGroup = require('./EmployeeGroup');
-const File = require('./File');
 const InstructionHistory = require('./InstructionHistory');
 const Location = require('./Location');
 const Signature = require('./Signature');
 const Employee = require('./Employee');
 const Organization = require('./Organization');
-const Sequelize = require('sequelize');
-const sequelize = require('../config/database');
-// Add other models here
+const InstructionPage = require('./InstructionPage');
 
-
+// Define associations
 Organization.hasMany(Employee, { foreignKey: 'organization_id' });
 Employee.belongsTo(Organization, { foreignKey: 'organization_id' });
 
 
 module.exports = {
   sequelize,
-  SystemAdmin , 
-  Organization , 
+  SystemAdmin,
+  Organization,
   OrganizationAdmin,
   SafetyEngineer,
-  Employee, 
+  Employee,
   Group,
   SafetyInstruction,
   GroupInstruction,
   EmployeeGroup,
-  File,
+  InstructionPage,
   InstructionHistory,
   Location,
   Signature
-  // Add other models to export here
 };
+
+
+// Foreign key холбоо энд:
+SafetyInstruction.hasMany(InstructionPage, {
+  foreignKey: 'safetyInstruction_id',
+});
+
 

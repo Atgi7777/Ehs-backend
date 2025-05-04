@@ -12,9 +12,14 @@ const { SystemAdmin } = require('./models');
 const authRoutes = require('./routes/authRoutes'); 
 const orgAdmin = require('./routes/orgAdmin');
 const systemAdmin = require('./routes/systemAdmin');
-const organizationRoute = require('./routes/organizationRoute');
+const organizationRoute = require('./routes/organizationRoutes');
 const employeeSafetyRoute = require('./routes/employeeSafetyRoute');
 const safetyRoutes = require('./routes/safetyRoutes');
+const instructionRoutes = require('./routes/instructionRoutes');
+
+app.use(express.json()); 
+
+
 
 
 
@@ -78,12 +83,14 @@ app.use('/api/users' , employeeSafetyRoute );
 app.use('/api' , uploadRoutes);
 
 
-app.use('/api/safety-engineer' , safetyRoutes);
+
+
+app.use('/api/safety-engineer', safetyRoutes);
 
 
 
 
-
+app.use('/api/instruction', instructionRoutes);
 
  
 

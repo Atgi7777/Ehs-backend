@@ -1,11 +1,14 @@
-// models/SafetyInstruction.js
-const { Sequelize, DataTypes } = require('sequelize');
+const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 const SafetyEngineer = require('./SafetyEngineer');
 
 const SafetyInstruction = sequelize.define('SafetyInstruction', {
   title: {
     type: DataTypes.STRING,
+    allowNull: false,
+  },
+  number: {
+    type: DataTypes.INTEGER,
     allowNull: false,
   },
   description: {
@@ -24,19 +27,17 @@ const SafetyInstruction = sequelize.define('SafetyInstruction', {
     type: DataTypes.DATE,
     allowNull: false,
   },
-  created_at: {
-    type: DataTypes.DATE,
-    defaultValue: Sequelize.NOW,
-  },
-  updated_at: {
-    type: DataTypes.DATE,
-    defaultValue: Sequelize.NOW,
-  },
+},{
+  tableName: 'safety_instructions',  // ✅ FK таарах болно
+  timestamps: true,
+  underscored: true,
 });
 
 SafetyInstruction.belongsTo(SafetyEngineer, {
   foreignKey: 'safetyEngineer_id',
   as: 'safetyEngineer',
 });
+
+
 
 module.exports = SafetyInstruction;

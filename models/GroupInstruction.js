@@ -11,6 +11,7 @@ const GroupInstruction = sequelize.define('GroupInstruction', {
   },
 });
 
+
 GroupInstruction.belongsTo(Group, {
   foreignKey: 'group_id',
   as: 'group',
