@@ -16,7 +16,7 @@ const organizationRoute = require('./routes/organizationRoutes');
 const employeeSafetyRoute = require('./routes/employeeSafetyRoute');
 const safetyRoutes = require('./routes/safetyRoutes');
 const instructionRoutes = require('./routes/instructionRoutes');
-
+const groupRoutes = require('./routes/groupRoutes');
 app.use(express.json()); 
 
 
@@ -83,7 +83,7 @@ app.use('/api/users' , employeeSafetyRoute );
 app.use('/api' , uploadRoutes);
 
 
-
+app.use('/api/safety-engineer' , groupRoutes);
 
 app.use('/api/safety-engineer', safetyRoutes);
 
