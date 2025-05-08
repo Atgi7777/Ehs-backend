@@ -39,7 +39,7 @@ router.post(
   '/instruction/:id/pages',
   upload.single('file'),
   safetyController.addInstructionPage
-);
+); 
 
 // routes/safetyRoutes.js
 router.get('/instructions', authenticateToken, safetyController.getAllInstructions);

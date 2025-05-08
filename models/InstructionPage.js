@@ -31,7 +31,7 @@ const InstructionPage = sequelize.define('InstructionPage', {
   video_url: {
     type: DataTypes.STRING,
     allowNull: true,
-  },
+  }, 
 }, {
   timestamps: true,
   underscored: true,
@@ -39,8 +39,10 @@ const InstructionPage = sequelize.define('InstructionPage', {
 
 InstructionPage.belongsTo(SafetyInstruction, {
   foreignKey: 'safetyInstruction_id',
+  onDelete: 'CASCADE',
   as: 'safetyInstruction',
 });
+
 
 
 module.exports = InstructionPage;

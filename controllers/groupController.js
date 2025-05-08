@@ -1,4 +1,9 @@
-const { Employee, Group, EmployeeGroup } = require('../models');
+const { Employee, Group, EmployeeGroup , SafetyEngineer , Organization  } = require('../models');
+
+const path = require('path');
+const fs = require('fs');
+const upload = require("../middleware/upload");
+
 
 exports.addEmployeeByPhone = async (req, res) => {
   const { groupId } = req.params;
@@ -114,6 +119,105 @@ exports.getEmployeeById = async (req, res) => {
     } catch (error) {
       console.error('❌ Бүлгээс хасах алдаа:', error);
       return res.status(500).json({ message: 'Серверийн алдаа' });
+    }
+  };
+  
+  exports.getGroupById = async (req, res) => {
+    const groupId = req.params.id;
+  
+    try {
+      const group = await Group.findByPk(groupId, {
+        include: [
+          { model: SafetyEngineer, as: 'safetyEngineer', attributes: ['id', 'name'] },
+          { model: Organization, as: 'organization', attributes: ['id', 'name'] },
+        ],
+      });
+  
+      if (!group) {
+        return res.status(404).json({ message: 'Group not found' });
+      }
+  
+      res.status(200).json(group);
+    } catch (error) {
+      console.error('Группийн дэлгэрэнгүй авах үед алдаа:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  };
+  
+
+
+
+ 
+  
+  exports.updateGroup = async (req, res) => {
+    const { groupId } = req.params;
+    const { name, activity, work_description, work_detail, status } = req.body;
+  
+    try {
+      const group = await Group.findByPk(groupId);
+      if (!group) {
+        return res.status(404).json({ message: 'Бүлэг олдсонгүй' });
+      }
+  
+      // Update regular fields
+      group.name = name;
+      group.activity = activity;
+      group.work_description = work_description;
+      group.work_detail = work_detail;
+      group.status = status;
+  
+      // ✅ Хэрвээ зураг ирсэн бол profile.image талбарыг update хийнэ
+      if (req.file) {
+        const newImagePath = `/uploads/${req.file.filename}`;
+  
+        // Хуучин зураг байвал устгах (хэрвээ хэрэгтэй бол)
+        if (group.profile?.image) {
+          const oldImagePath = path.join(__dirname, '..', 'public', group.profile.image);
+          if (fs.existsSync(oldImagePath)) {
+            fs.unlinkSync(oldImagePath);
+          }
+        }
+  
+        // Update profile.image
+        group.profile = {
+          ...group.profile,
+          image: newImagePath,
+        };
+      }
+  
+      await group.save();
+  
+      return res.json({ message: 'Амжилттай шинэчлэгдлээ', data: group });
+    } catch (err) {
+      console.error('❌ Бүлэг шинэчлэхэд алдаа:', err);
+      return res.status(500).json({ message: 'Дотоод алдаа гарлаа' });
+    }
+  };
+
+  exports.deleteGroup = async (req, res) => {
+    const { groupId } = req.params;
+  
+    try {
+      const group = await Group.findByPk(groupId);
+  
+      if (!group) {
+        return res.status(404).json({ message: 'Бүлэг олдсонгүй' });
+      }
+  
+      // Хэрвээ зурагтай бол устгана
+      if (group.profile?.image) {
+        const imagePath = path.join(__dirname, '..', 'public', group.profile.image);
+        if (fs.existsSync(imagePath)) {
+          fs.unlinkSync(imagePath);
+        }
+      }
+  
+      await group.destroy();
+  
+      return res.json({ message: 'Бүлэг амжилттай устлаа' });
+    } catch (err) {
+      console.error('❌ Бүлэг устгахад алдаа:', err);
+      return res.status(500).json({ message: 'Дотоод серверийн алдаа' });
     }
   };
   

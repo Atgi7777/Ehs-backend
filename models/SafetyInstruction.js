@@ -1,3 +1,4 @@
+//SafetyInstruction.js
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 const SafetyEngineer = require('./SafetyEngineer');
@@ -37,6 +38,7 @@ SafetyInstruction.belongsTo(SafetyEngineer, {
   foreignKey: 'safetyEngineer_id',
   as: 'safetyEngineer',
 });
+
 
 
 

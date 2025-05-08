@@ -83,7 +83,7 @@ app.use('/api/users' , employeeSafetyRoute );
 app.use('/api' , uploadRoutes);
 
 
-app.use('/api/safety-engineer' , groupRoutes);
+app.use('/api/group' , groupRoutes);
 
 app.use('/api/safety-engineer', safetyRoutes);
 

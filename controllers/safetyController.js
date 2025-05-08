@@ -322,7 +322,7 @@ exports.updateCurrentSafetyEngineerProfile = async (req, res) => {
 exports.createSafetyInstruction = async (req, res) => {
   try {
     const { title, number, description, start_date, end_date } = req.body;
-    console.log('✅ JWT decode хийгдсэн хэрэглэгч:', req.user);
+   
 
     if (!title || !number || !description || !start_date || !end_date) {
       return res.status(400).json({ error: "Бүх талбарыг бөглөнө үү." });
