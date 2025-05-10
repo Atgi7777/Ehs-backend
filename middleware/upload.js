@@ -1,3 +1,4 @@
+//middleware/upload.js
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
@@ -26,16 +27,20 @@ const storage = multer.diskStorage({
 
 // зөвшөөрөгдсөн төрөл
 const fileFilter = (req, file, cb) => {
-  const allowedTypes = [
-    'image/jpeg',
-    'image/png',
-    'image/jpg',
-    'audio/mpeg',
-    'audio/mp3',
-    'audio/wav',
-    'video/mp4',
-    'video/webm',
-  ];
+const allowedTypes = [
+  'image/jpeg',
+  'image/png',
+  'image/jpg',
+  'audio/mpeg',     // MP3
+  'audio/wav',
+  'audio/x-wav',
+  'video/mp4',
+  'video/webm',
+  'video/quicktime', // for .mov files
+  'video/x-matroska', // for .mkv files
+];
+
+
 
   if (allowedTypes.includes(file.mimetype)) {
     cb(null, true);

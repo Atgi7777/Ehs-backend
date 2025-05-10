@@ -9,15 +9,16 @@ const InstructionHistory = sequelize.define('InstructionHistory', {
   instruction_status: {
     type: DataTypes.ENUM('not-viewed', 'reviewed', 'viewed'),
     defaultValue: 'viewed',
-  },
+  }, 
   date_viewed: {
     type: DataTypes.DATE,
     allowNull: false,
   },
   notes: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
+  type: DataTypes.STRING,
+  allowNull: true,
+},
+
   viewed_at: {
     type: DataTypes.DATE,
     defaultValue: Sequelize.NOW,

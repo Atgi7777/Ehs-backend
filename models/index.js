@@ -15,6 +15,9 @@ const Signature = require('./Signature');
 const Employee = require('./Employee');
 const Organization = require('./Organization');
 const InstructionPage = require('./InstructionPage');
+const Issue = require('./Issue');
+const IssueComment = require('./IssueComment');
+const IssueImage = require('./IssueImage');
 
 // Define associations
 Organization.hasMany(Employee, { foreignKey: 'organization_id' });
@@ -35,7 +38,10 @@ module.exports = {
   InstructionPage,
   InstructionHistory,
   Location,
-  Signature
+  Signature,
+  Issue,
+  IssueComment,
+  IssueImage
 };
 
 

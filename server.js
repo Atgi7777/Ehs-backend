@@ -17,7 +17,10 @@ const employeeSafetyRoute = require('./routes/employeeSafetyRoute');
 const safetyRoutes = require('./routes/safetyRoutes');
 const instructionRoutes = require('./routes/instructionRoutes');
 const groupRoutes = require('./routes/groupRoutes');
+const employeeRoutes = require('./routes/employeeRoutes');
 app.use(express.json()); 
+const signatureRoutes = require('./routes/signatures'); // ✍️ Signature route
+
 
 
 
@@ -49,16 +52,19 @@ sequelize.sync({ alter: true })
   });
 
 
-app.use(cors({
-  origin: 'http://localhost:3000',  
-  credentials: true
-}));
+  app.use(cors({
+    origin: '*', // Эсвэл гараар mobile IP-аа whitelist хийж болно
+    credentials: true
+  }));
+  
 
 app.use(express.json());
 
-app.listen(5050, () => {
-  console.log('Server running on http://localhost:5050');
+
+app.listen(5050, '0.0.0.0', () => {
+  console.log('Server running on http://0.0.0.0:5050');
 });
+
 
 
 // Static folder
@@ -88,9 +94,11 @@ app.use('/api/group' , groupRoutes);
 app.use('/api/safety-engineer', safetyRoutes);
 
 
-
+app.use('/api/employee' , employeeRoutes);
 
 app.use('/api/instruction', instructionRoutes);
 
  
 
+app.use(express.json({ limit: '10mb' }));  // Base64 зураг явуулах тул payload ихсэх магадлалтай
+app.use('/api/signatures', signatureRoutes);

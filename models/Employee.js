@@ -22,7 +22,7 @@ const Employee = sequelize.define('Employee', {
     allowNull: false,
   },
   profile: {
-    type: DataTypes.JSON, // or STRING if you prefer plain text
+    type: DataTypes.JSON, 
     allowNull: true,
   },
   department: {

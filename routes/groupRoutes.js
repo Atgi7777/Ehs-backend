@@ -11,7 +11,7 @@ router.post('/group/:groupId/add-by-email', groupController.addEmployeeByEmail);
 router.get('/employees/:id' , groupController.getEmployeeById );
 
 
-router.delete('/group/:groupId/remove/:employeeId', groupController.removeEmployeeFromGroup);
+router.delete('/:groupId/remove/:employeeId', groupController.removeEmployeeFromGroup);
 
 router.get('/:id', groupController.getGroupById);
 
@@ -19,6 +19,7 @@ router.put('/:groupId' ,upload.single('image'),  groupController.updateGroup);
 
 router.delete('/:groupId', groupController.deleteGroup);
 
+router.get('/:groupId/instructions', groupController.getInstructionsByGroup);
 
 
 module.exports = router;

@@ -213,128 +213,81 @@ exports.getInstructionWithPages = async (req, res) => {
   }
 };
 
-
-
-// Зааварчилгааг шинэчлэх
-exports.updateInstruction = async (req, res) => {
-  const { id } = req.params;
-  const {
-    title,
-    number,
-    description,
-    start_date,
-    end_date,
-  } = req.body;
+exports.updateInstructionWithPages = async (req, res) => {
+  const id = req.params.id;
 
   try {
-    const instruction = await SafetyInstruction.findByPk(id);
-    if (!instruction) {
-      return res.status(404).json({ message: 'Зааварчилгаа олдсонгүй' });
+    // 1. Instruction update
+    const { title, number, description, start_date, end_date } = req.body;
+    await SafetyInstruction.update({ title, number, description, start_date, end_date }, {
+      where: { id },
+    });
+
+    // 2. Delete old pages
+    await InstructionPage.destroy({ where: { safetyInstruction_id: id } });
+
+    // 3. Parse pages from req.body
+    const pages = JSON.parse(req.body.pages); // string -> object
+
+    const newPages = [];
+
+    for (let i = 0; i < pages.length; i++) {
+      const page = pages[i];
+      const page_order = i + 1;
+
+      const image = req.files[`image_${i}`]?.[0];
+      const video = req.files[`video_${i}`]?.[0];
+      const audio = req.files[`audio_${i}`]?.[0];
+
+      newPages.push({
+        page_order,
+        description: page.description || '',
+        location: page.location || '',
+        image_url: image ? `/uploads/${image.filename}` : '',
+        video_url: video ? `/uploads/videos/${video.filename}` : '',
+        audio_url: audio ? `/uploads/audios/${audio.filename}` : '',
+        safetyInstruction_id: id,
+      });
     }
 
-    await instruction.update({
-      title,
-      number,
-      description,
-      start_date,
-      end_date,
-    });
+    await InstructionPage.bulkCreate(newPages);
 
-    res.json({ message: 'Амжилттай шинэчиллээ' });
+    res.json({ message: 'Амжилттай хадгалагдлаа' });
   } catch (err) {
-    console.error('⚠️ Зааварчилгаа шинэчлэхэд алдаа:', err);
-    res.status(500).json({ message: 'Шинэчлэхэд алдаа гарлаа' });
-  }
-};
-
-// Шинэ хуудас үүсгэх
-exports.createPage = async (req, res) => {
-  const {
-    safetyInstruction_id,
-    description,
-    page_order,
-    location,
-    image_url,
-    video_url,
-    audio_url,
-  } = req.body;
-
-  try {
-    const page = await InstructionPage.create({
-      safetyInstruction_id,
-      description,
-      page_order,
-      location,
-      image_url,
-      video_url,
-      audio_url,
-    });
-
-    res.status(201).json({ message: 'Хуудас амжилттай нэмлээ', page });
-  } catch (err) {
-    console.error('⚠️ Хуудас үүсгэхэд алдаа:', err);
-    res.status(500).json({ message: 'Хуудас үүсгэхэд алдаа гарлаа' });
+    console.error('Хадгалах үед алдаа:', err);
+    res.status(500).json({ message: 'Хадгалах үед алдаа гарлаа' });
   }
 };
 
 
+exports.updateInstructionWithMedia = async (req, res) => {
+  const id = req.params.id;
+  const { title, number, description, start_date, end_date, pages } = JSON.parse(req.body.data);
 
-exports.addInstructionPage = async (req, res) => {
   try {
-    const instructionId = req.params.id;
-    const { description, page_order, location } = req.body;
-    const file = req.file;
+    await SafetyInstruction.update({ title, number, description, start_date, end_date }, { where: { id } });
 
-    let image_url = null;
-    let audio_url = null;
-    let video_url = null;
+    await InstructionPage.destroy({ where: { safetyInstruction_id: id } });
 
-    if (file) {
-      const mime = file.mimetype;
-      const relativePath = path.join(file.destination.split('/').pop(), file.filename);
+    const newPages = [];
 
-      if (mime.startsWith("image/")) {
-        image_url = relativePath;
-      } else if (mime.startsWith("audio/")) {
-        audio_url = relativePath;
-      } else if (mime.startsWith("video/")) {
-        video_url = relativePath;
-      }
+    for (let i = 0; i < pages.length; i++) {
+      newPages.push({
+        page_order: i + 1,
+        description: pages[i].description,
+        location: pages[i].location,
+        safetyInstruction_id: id,
+        image_url: req.files[`image_url_${i}`]?.[0]?.path || '',
+        audio_url: req.files[`audio_url_${i}`]?.[0]?.path || '',
+        video_url: req.files[`video_url_${i}`]?.[0]?.path || '',
+      });
     }
 
-    const newPage = await InstructionPage.create({
-      safetyInstruction_id: instructionId,
-      description,
-      page_order,
-      location,
-      image_url,
-      audio_url,
-      video_url,
-    });
+    await InstructionPage.bulkCreate(newPages);
 
-    res.status(201).json(newPage);
-  } catch (err) {
-    console.error("📛 Error saving instruction page:", err);
-    res.status(500).json({
-      message: "Алдаа: Хуудас хадгалах үед алдаа гарлаа",
-    });
-  }
-};
-
-
-
-// controllers/instructionController.js
-exports.deletePage = async (req, res) => {
-  const { id } = req.params;
-
-  try {
-    const page = await InstructionPage.findByPk(id);
-    if (!page) return res.status(404).json({ message: 'Хуудас олдсонгүй' });
-
-    await page.destroy();
-    res.json({ message: 'Амжилттай устгалаа' });
-  } catch (err) {
-    console.error('❌ Устгах үед алдаа:', err);
-    res.status(500).json({ message: 'Устгах үед алдаа гарлаа' });
+    res.json({ message: 'Инструкция болон медиа амжилттай хадгалагдлаа' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Алдаа гарлаа' });
   }
 };

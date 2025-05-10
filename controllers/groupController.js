@@ -1,4 +1,5 @@
-const { Employee, Group, EmployeeGroup , SafetyEngineer , Organization  } = require('../models');
+const { Employee, Group, EmployeeGroup , SafetyEngineer , Organization , SafetyInstruction , GroupInstruction} = require('../models');
+
 
 const path = require('path');
 const fs = require('fs');
@@ -221,3 +222,28 @@ exports.getEmployeeById = async (req, res) => {
     }
   };
   
+
+exports.getInstructionsByGroup = async (req, res) => {
+  try {
+    const { groupId } = req.params;
+
+    const groupInstructions = await GroupInstruction.findAll({
+      where: { group_id: groupId },
+      include: [
+        {
+          model: SafetyInstruction,
+          as: 'safetyInstruction',
+        }
+      ],
+      order: [['assigned_at', 'DESC']],
+    });
+
+    // Зөвхөн зааварчилгаануудыг салгаж авах
+    const instructions = groupInstructions.map((gi) => gi.safetyInstruction);
+
+    res.status(200).json(instructions);
+  } catch (error) {
+    console.error('Бүлгийн зааварчилгаа татахад алдаа:', error);
+    res.status(500).json({ message: 'Алдаа гарлаа.' });
+  }
+};

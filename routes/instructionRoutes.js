@@ -16,22 +16,34 @@ router.get('/groups/:groupId/instructions', instructionController.getInstruction
 router.delete('/:id/unshare-group/:groupId', instructionController.unshareGroupFromInstruction);
 
 // PUT /api/instructions/:id
-router.put('/:id', instructionController.updateInstruction);
+
 
 // DELETE /api/instructions/:id
 router.delete('/:id', instructionController.deleteInstruction);
 
  
 router.get('/:id/with-pages', instructionController.getInstructionWithPages);
-//хуудас үүсгэх 
-router.post('/instruction-pages', instructionController.createPage);
 
-//хуудас засах
+router.put(
+    '/:id/with-pages',
+    upload.fields([
+      { name: 'image_0' }, { name: 'video_0' }, { name: 'audio_0' },
+      { name: 'image_1' }, { name: 'video_1' }, { name: 'audio_1' },
+      { name: 'image_2' }, { name: 'video_2' }, { name: 'audio_2' },
+      // ⚠️ Дээд тал нь хэдэн хуудсыг дэмжихээ энд нэмээрэй
+    ]),
+    instructionController.updateInstructionWithPages
+  );
 
-// routes/instruction.js
-router.delete('/instruction-pages/:id', instructionController.deletePage);
 
-
-router.post('/:id/instruction-pages', upload.single('file'), instructionController.addInstructionPage);
-
+  // Handle multiple files per page using fields
+const fields = [
+    { name: 'image_url_0' }, { name: 'audio_url_0' }, { name: 'video_url_0' },
+    { name: 'image_url_1' }, { name: 'audio_url_1' }, { name: 'video_url_1' },
+    { name: 'image_url_2' }, { name: 'audio_url_2' }, { name: 'video_url_2' },
+    // нэмэх шаардлагатай бол динамикжуулж болно
+  ];
+  
+  router.put('/:id/with-media', upload.fields(fields), instructionController.updateInstructionWithMedia);
+  
 module.exports = router;
