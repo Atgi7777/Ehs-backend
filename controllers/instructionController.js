@@ -3,14 +3,16 @@
 const express = require("express");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const moment = require('moment-timezone'); // 👉 заавал суулгасан байх ёстой
 
 require("dotenv").config();
 const {
   Group,
   GroupInstruction,
   SafetyInstruction,
-  InstructionPage
+  InstructionPage , InstructionHistory , Employee, Signature, Location , SafetyEngineer
 } = require("../models"); 
+const { Op } = require('sequelize');
 
 exports.shareInstructionToGroups = async (req, res) => {
   const { instructionId } = req.params;
@@ -289,5 +291,123 @@ exports.updateInstructionWithMedia = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Алдаа гарлаа' });
+  }
+};
+
+
+
+
+exports.getInstructionHistoriesByDate = async (req, res) => {
+  try {
+    const { date } = req.query;
+    const userId = req.user.id; // 🔥 authenticateToken дээрээ req.user.id дамжуулж байгаа гэж үзэж байна
+
+    if (!date) {
+      return res.status(400).json({ message: 'Огноо дамжуулаагүй байна.' });
+    }
+
+    // 1. Монголын цагаар (Asia/Ulaanbaatar) UTC-руу хөрвүүлэх
+    const startDate = moment.tz(date, 'Asia/Ulaanbaatar').startOf('day').utc().toDate();
+    const endDate = moment.tz(date, 'Asia/Ulaanbaatar').endOf('day').utc().toDate();
+
+    // 2. InstructionHistory-г шүүж авах
+    const histories = await InstructionHistory.findAll({
+      where: {
+        viewed_at: {
+          [Op.between]: [startDate, endDate],
+        },
+        employee_id: userId, // зөвхөн тухайн хэрэглэгчийн түүх
+      },
+      include: [
+        {
+          model: Employee,
+          as: 'employee',
+          attributes: ['id', 'name', 'position'],
+        },
+        {
+          model: SafetyInstruction,
+          as: 'instruction',
+          attributes: ['id', 'title', 'description', 'start_date', 'end_date'],
+          include: [
+            {
+              model: SafetyEngineer,
+              as: 'safetyEngineer',
+              attributes: ['id', 'name', 'email', 'phone'],
+            },
+          ],
+        },
+        {
+          model: Signature,
+          as: 'signature',
+          attributes: ['id', 'signature_photo', 'signed_at'],
+        },
+        {
+          model: Location,
+          as: 'location',
+          attributes: ['id', 'location_detail', 'latitude', 'longitude'],
+        },
+      ],
+      order: [['viewed_at', 'ASC']],
+    });
+
+    res.status(200).json(histories);
+  } catch (error) {
+    console.error('Түүх татахад алдаа:', error);
+    res.status(500).json({ message: 'Түүх авахад алдаа гарлаа', error: error.message });
+  }
+};
+
+
+// 📜 Нэг зааварчилгааны түүх дэлгэрэнгүй авах
+
+exports.getInstructionHistoryDetail = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const history = await InstructionHistory.findByPk(id, {
+      include: [
+        {
+          model: Employee,
+          as: 'employee',
+          attributes: ['id', 'name', 'position'],
+        },
+        {
+          model: SafetyInstruction,
+          as: 'instruction',
+          attributes: ['id', 'title', 'description', 'start_date', 'end_date', 'number'],
+          include: [
+            {
+              model: SafetyEngineer,
+              as: 'safetyEngineer',
+              attributes: ['id', 'name', 'email', 'phone'],
+            },
+          ],
+        },
+        {
+          model: Group,
+          as: 'group',
+          attributes: ['id', 'name'],
+        },
+        {
+          model: Signature,
+          as: 'signature',
+          attributes: ['id', 'signature_photo', 'signed_at'],
+        },
+        {
+          model: Location,
+          as: 'location',
+          attributes: ['id', 'location_detail', 'latitude', 'longitude'],
+        },
+      ],
+    });
+
+    if (!history) {
+      return res.status(404).json({ message: 'Түүх олдсонгүй' });
+    }
+
+    res.status(200).json(history);
+  } catch (error) {
+    console.error('⚠️ Дэлгэрэнгүй түүх татахад алдаа:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 };

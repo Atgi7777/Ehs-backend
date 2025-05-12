@@ -51,3 +51,25 @@ SafetyInstruction.hasMany(InstructionPage, {
 });
 
 
+InstructionHistory.hasMany(Signature, {
+  foreignKey: 'history_id',
+   as: 'signature',
+});
+
+InstructionHistory.hasMany(Location, {
+  foreignKey: 'history_id',
+   as: 'location',
+});
+Signature.belongsTo(Employee, {
+foreignKey: 'employee_id',
+  as: 'employee',
+});
+
+Signature.belongsTo(InstructionHistory, {
+  foreignKey: 'history_id',
+  as: 'instructionHistory',
+});
+Issue.hasMany(IssueImage, {
+  foreignKey: 'issue_id',
+  as: 'images',
+});

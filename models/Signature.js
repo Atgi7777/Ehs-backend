@@ -6,7 +6,7 @@ const InstructionHistory = require('./InstructionHistory');
 
 const Signature = sequelize.define('Signature', {
   signature_photo: {
-    type: DataTypes.TEXT,
+    type: DataTypes.TEXT('long'), 
     allowNull: false,
   },
   signed_at: {
@@ -15,14 +15,6 @@ const Signature = sequelize.define('Signature', {
   },
 });
 
-Signature.belongsTo(Employee, {
-foreignKey: 'employee_id',
-  as: 'employee',
-});
 
-Signature.belongsTo(InstructionHistory, {
-  foreignKey: 'history_id',
-  as: 'instructionHistory',
-});
 
 module.exports = Signature;

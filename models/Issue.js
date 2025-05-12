@@ -1,7 +1,7 @@
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 const Employee = require('./Employee');
-const Group = require('./Group');
+const SafetyEngineer = require('./SafetyEngineer');
 
 const Issue = sequelize.define('Issue', {
   title: {
@@ -10,8 +10,33 @@ const Issue = sequelize.define('Issue', {
   },
   description: {
     type: DataTypes.TEXT,
+    allowNull: false,
+  },
+  image_url: {
+    type: DataTypes.STRING,
     allowNull: true,
   },
+  status: {
+    type: DataTypes.ENUM('pending', 'in_progress', 'resolved'),
+    defaultValue: 'pending',
+  },
+  
+  
+  reporter_id: { 
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+
+  // 🔥 Шинэ нэмэгдэж буй талбарууд
+  location: { 
+    type: DataTypes.STRING, 
+    allowNull: true, 
+  },
+  cause: { 
+    type: DataTypes.TEXT, 
+    allowNull: true, 
+  },
+
   created_at: {
     type: DataTypes.DATE,
     defaultValue: Sequelize.NOW,
@@ -20,19 +45,13 @@ const Issue = sequelize.define('Issue', {
     type: DataTypes.DATE,
     defaultValue: Sequelize.NOW,
   },
-  status: {
-  type: DataTypes.ENUM('pending', 'in_progress', 'resolved', 'rejected'),
-  defaultValue: 'pending',
-},
-
 }, {
   timestamps: false,
   createdAt: 'created_at',
   updatedAt: 'updated_at',
 });
 
-// --- Харилцаа (Relations)
-Issue.belongsTo(Employee, { foreignKey: 'created_by', as: 'employee' });
-Issue.belongsTo(Group, { foreignKey: 'group_id', as: 'group' });
+Issue.belongsTo(Employee, { foreignKey: 'reporter_id', as: 'reporter' });
+Issue.belongsTo(SafetyEngineer, { foreignKey: 'assigned_id', as: 'assignedEngineer' });
 
 module.exports = Issue;

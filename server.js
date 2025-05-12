@@ -20,7 +20,7 @@ const groupRoutes = require('./routes/groupRoutes');
 const employeeRoutes = require('./routes/employeeRoutes');
 app.use(express.json()); 
 const signatureRoutes = require('./routes/signatures'); // ✍️ Signature route
-
+const issueRoutes = require('./routes/issueRoutes');
 
 
 
@@ -98,7 +98,8 @@ app.use('/api/employee' , employeeRoutes);
 
 app.use('/api/instruction', instructionRoutes);
 
- 
+ app.use('/api', issueRoutes); // 👈 энд заавал холбоно
+
 
 app.use(express.json({ limit: '10mb' }));  // Base64 зураг явуулах тул payload ихсэх магадлалтай
 app.use('/api/signatures', signatureRoutes);

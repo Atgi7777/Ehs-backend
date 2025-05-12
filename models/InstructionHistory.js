@@ -4,6 +4,7 @@ const sequelize = require('../config/database');
 const Employee = require('./Employee');
 const SafetyInstruction = require('./SafetyInstruction');
 const Group = require('./Group');
+const Signature = require('./Signature');
 
 const InstructionHistory = sequelize.define('InstructionHistory', {
   instruction_status: {
@@ -24,7 +25,7 @@ const InstructionHistory = sequelize.define('InstructionHistory', {
     defaultValue: Sequelize.NOW,
   },
 });
-
+ 
 InstructionHistory.belongsTo(Employee, {
   foreignKey: 'employee_id',
   as: 'employee',
@@ -39,5 +40,6 @@ InstructionHistory.belongsTo(Group, {
   foreignKey: 'group_id',
   as: 'group',
 });
+
 
 module.exports = InstructionHistory;

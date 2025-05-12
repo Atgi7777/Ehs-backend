@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const instructionController = require('../controllers/instructionController');
 const upload = require('../middleware/upload');
-
+const middleware = require('../middleware/auth');
 
 router.get('/:id/slides', instructionController.getSlidesByInstructionId);
 
@@ -46,4 +46,12 @@ const fields = [
   
   router.put('/:id/with-media', upload.fields(fields), instructionController.updateInstructionWithMedia);
   
+  // 📋 Өдөр сонгож түүхүүдийг авах
+router.get('/history', middleware , instructionController.getInstructionHistoriesByDate);
+
+
+
+// 📜 Нэг түүх дэлгэрэнгүй авах
+router.get('/history/:id', instructionController.getInstructionHistoryDetail);
+
 module.exports = router;

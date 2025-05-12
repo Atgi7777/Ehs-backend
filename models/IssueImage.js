@@ -7,17 +7,12 @@ const IssueImage = sequelize.define('IssueImage', {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  description: {      // 🔥 Зураг бүр дээр өөрийн тайлбар
-    type: DataTypes.TEXT,
-    allowNull: true,
-  },
-  created_at: {
+  uploaded_at: {
     type: DataTypes.DATE,
     defaultValue: Sequelize.NOW,
-  }
+  },
 }, {
   timestamps: false,
-  createdAt: 'created_at',
 });
 
 IssueImage.belongsTo(Issue, {
