@@ -21,5 +21,7 @@ router.delete('/:groupId', groupController.deleteGroup);
 
 router.get('/:groupId/instructions', groupController.getInstructionsByGroup);
 
+router.get('/groups/:id',authenticateToken, groupController.getGroupDetail);
+
 
 module.exports = router;

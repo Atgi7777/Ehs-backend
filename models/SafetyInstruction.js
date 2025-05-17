@@ -2,6 +2,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 const SafetyEngineer = require('./SafetyEngineer');
+const Group = require('./Group');
 
 const SafetyInstruction = sequelize.define('SafetyInstruction', {
   title: {
@@ -38,7 +39,6 @@ SafetyInstruction.belongsTo(SafetyEngineer, {
   foreignKey: 'safetyEngineer_id',
   as: 'safetyEngineer',
 });
-
 
 
 

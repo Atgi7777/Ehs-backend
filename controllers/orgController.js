@@ -2,29 +2,127 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 require('dotenv').config();
-const { SystemAdmin, Organization, Employee, OrganizationAdmin } = require('../models');
+const { SystemAdmin, Organization, Employee, OrganizationAdmin , SafetyEngineer , Issue} = require('../models');
 
 
-
+ const { Op } = require('sequelize'); // 🌟 Op-г импортлоно
 
 exports.getDashboardStats = async (req, res) => {
   try {
-    const organizations = await Organization.count();
-    const employees = await Employee.count();
+    // ❗ systemAdminId шалгах шаардлагагүй болсон
+    // const user = req.user; 
 
-    
-    const reports = 0;
+    // 1️⃣ Бүх байгууллагуудыг авна
+    const organizations = await Organization.findAll({
+      attributes: ['id']
+    });
+
+    const organizationIds = organizations.map(org => org.id);
+
+    if (organizationIds.length === 0) {
+      return res.json({
+        organizations: 0,
+        employees: 0,
+        reports: 0
+      });
+    }
+
+    // 2️⃣ Бүх байгууллагуудын ажилчдын нийт тоо (Employee)
+    const employeeCount = await Employee.count({
+      where: {
+        organization_id: {
+          [Op.in]: organizationIds
+        }
+      }
+    });
+
+    // 3️⃣ Бүх байгууллагуудын ХАБ инженерүүдийн тоо (SafetyEngineer)
+    const safetyEngineerCount = await SafetyEngineer.count({
+      where: {
+        organization_id: {
+          [Op.in]: organizationIds
+        }
+      }
+    });
+
+    // 4️⃣ Бүх байгууллагуудын нийт админ (OrganizationAdmin)
+    const organizationAdminCount = await OrganizationAdmin.count({
+      where: {
+        organization_id: {
+          [Op.in]: organizationIds
+        }
+      }
+    });
+
+    const employees = employeeCount + safetyEngineerCount + organizationAdminCount; // ✅ Нийт ажилчид + ХАБ инженерүүд + админ
+
+    // 5️⃣ Бүх байгууллагын нийт мэдэгдэл (Issue)
+    const reports = await Issue.count({
+      where: {
+        organization_id: {
+          [Op.in]: organizationIds
+        }
+      }
+    });
 
     res.json({
-      organizations,
-      employees,
-      reports
+      organizations: organizationIds.length, // нийт байгууллагын тоо
+      employees,                              // нийт ажилчид
+      reports                                 // нийт мэдэгдэл
     });
+
   } catch (error) {
     console.error('📊 Dashboard мэдээлэл авахад алдаа:', error);
     res.status(500).json({ message: 'Дашбоардын мэдээлэл авахад алдаа гарлаа' });
   }
 };
+
+
+
+
+
+exports.getOrgDashboard = async (req, res) => {
+  try {
+    const user = req.user; 
+    const organizationId = user.organization_id; // ✅ Байгууллагын админы харьяалсан байгууллага
+
+    if (!organizationId) {
+      return res.status(400).json({ message: 'Байгууллагын ID олдсонгүй' });
+    }
+
+    // 1️⃣ Байгууллагын ажилчдын нийт тоо (Employee)
+    const employeeCount = await Employee.count({
+      where: { organization_id: organizationId }
+    });
+
+    // 2️⃣ Байгууллагын ХАБ инженерүүдийн нийт тоо (SafetyEngineer)
+    const safetyEngineerCount = await SafetyEngineer.count({
+      where: { organization_id: organizationId }
+    });
+
+    const employees = employeeCount + safetyEngineerCount; // 🔥 Нийт ажилтан
+
+    // 3️⃣ Байгууллагад бүртгэгдсэн нийт Issue
+    const incidents = await Issue.count({
+      where: { organization_id: organizationId }
+    });
+
+    // 4️⃣ Тайлангийн тоо -> Хатуу 5 тавина
+    const reports = 5;
+
+    res.json({
+      employees,
+      reports,
+      incidents
+    });
+
+  } catch (error) {
+    console.error('📊 Dashboard мэдээлэл авахад алдаа:', error);
+    res.status(500).json({ message: 'Дашбоардын мэдээлэл авахад алдаа гарлаа' });
+  }
+};
+
+
 
 exports.getProfile = async (req, res) => {
   try {

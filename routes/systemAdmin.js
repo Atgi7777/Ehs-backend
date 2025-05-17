@@ -11,6 +11,7 @@ const authOrgController = require('../controllers/authOrgController');
 //dashboard 
 router.get('/dashboard', authenticateToken, orgController.getDashboardStats);
 
+router.get('/orgDashboard', authenticateToken, orgController.getOrgDashboard);
 
 // organization дээрх мэдээллийг авах 
 router.get('/organizations', authenticateToken, orgController.getOrganizations);

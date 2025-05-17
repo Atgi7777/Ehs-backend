@@ -1,7 +1,9 @@
+//models/Issue.js
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 const Employee = require('./Employee');
-const SafetyEngineer = require('./SafetyEngineer');
+// const SafetyEngineer = require('./SafetyEngineer');
+const Organization = require('./Organization'); // 🌟 Organization загвар импортлох
 
 const Issue = sequelize.define('Issue', {
   title: {
@@ -12,10 +14,7 @@ const Issue = sequelize.define('Issue', {
     type: DataTypes.TEXT,
     allowNull: false,
   },
-  image_url: {
-    type: DataTypes.STRING,
-    allowNull: true,
-  },
+ 
   status: {
     type: DataTypes.ENUM('pending', 'in_progress', 'resolved'),
     defaultValue: 'pending',
@@ -45,6 +44,11 @@ const Issue = sequelize.define('Issue', {
     type: DataTypes.DATE,
     defaultValue: Sequelize.NOW,
   },
+  organization_id: { 
+  type: DataTypes.INTEGER,
+  allowNull: false,
+},
+
 }, {
   timestamps: false,
   createdAt: 'created_at',
@@ -52,6 +56,8 @@ const Issue = sequelize.define('Issue', {
 });
 
 Issue.belongsTo(Employee, { foreignKey: 'reporter_id', as: 'reporter' });
-Issue.belongsTo(SafetyEngineer, { foreignKey: 'assigned_id', as: 'assignedEngineer' });
+// Issue.belongsTo(SafetyEngineer, { foreignKey: 'assigned_id', as: 'assignedEngineer' });
+Issue.belongsTo(Organization, { foreignKey: 'organization_id', as: 'organization' });
 
 module.exports = Issue;
+ 

@@ -374,7 +374,6 @@ exports.addInstructionPage = async (req, res) => {
       audio_url,
       video_url,
     });
-    console.log(newPage.dataValues, "jjjj");
 
     res.status(201).json(newPage);
   } catch (err) {
@@ -384,7 +383,7 @@ exports.addInstructionPage = async (req, res) => {
       .json({ message: "Алдаа: Хуудас хадгалах үед алдаа гарлаа" });
   }
 };
-
+ 
 
 // controllers/safetyController.js
 exports.getAllInstructions = async (req, res) => {

@@ -1,3 +1,4 @@
+// models/Issuecomment.js
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 const Issue = require('./Issue');

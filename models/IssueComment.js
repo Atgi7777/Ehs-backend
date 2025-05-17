@@ -1,3 +1,4 @@
+// models/IssueComment.js
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 const Issue = require('./Issue');
@@ -21,6 +22,8 @@ const IssueComment = sequelize.define('IssueComment', {
     type: DataTypes.DATE,
     defaultValue: Sequelize.NOW,
   },
+  issue_id: { type: DataTypes.INTEGER, allowNull: false },
+
 }, {
   timestamps: false,
   createdAt: 'created_at',

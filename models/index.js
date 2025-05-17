@@ -18,6 +18,8 @@ const InstructionPage = require('./InstructionPage');
 const Issue = require('./Issue');
 const IssueComment = require('./IssueComment');
 const IssueImage = require('./IssueImage');
+const SafetyTraining = require('./SafetyTraining');
+const TrainingAttendance = require('./TrainingAttendance');
 
 // Define associations
 Organization.hasMany(Employee, { foreignKey: 'organization_id' });
@@ -41,7 +43,9 @@ module.exports = {
   Signature,
   Issue,
   IssueComment,
-  IssueImage
+  IssueImage,
+  TrainingAttendance,
+  SafetyTraining
 };
 
 
@@ -72,4 +76,11 @@ Signature.belongsTo(InstructionHistory, {
 Issue.hasMany(IssueImage, {
   foreignKey: 'issue_id',
   as: 'images',
+  onDelete: 'CASCADE'
 });
+
+Issue.hasMany(IssueComment, { foreignKey: 'issue_id', as: 'comments' , onDelete: 'CASCADE' });
+
+Group.hasMany(EmployeeGroup, { foreignKey: 'group_id', as: 'members' });
+
+Organization.hasMany(Issue, { foreignKey: 'organization_id', as: 'issues' });

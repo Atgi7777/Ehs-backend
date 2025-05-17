@@ -21,8 +21,10 @@ const employeeRoutes = require('./routes/employeeRoutes');
 app.use(express.json()); 
 const signatureRoutes = require('./routes/signatures'); // ✍️ Signature route
 const issueRoutes = require('./routes/issueRoutes');
+const { Server } = require('socket.io');
 
 
+const http = require('http');
 
 
 
@@ -52,11 +54,55 @@ sequelize.sync({ alter: true })
   });
 
 
-  app.use(cors({
-    origin: '*', // Эсвэл гараар mobile IP-аа whitelist хийж болно
-    credentials: true
-  }));
+  // app.use(cors({
+  //   origin: '*', // Эсвэл гараар mobile IP-аа whitelist хийж болно
+  //   credentials: true
+  // }));
   
+// app.use(cors({
+//   origin: 'http://localhost:3000', // 🌟 Яг client origin-ийг тавина
+//   credentials: true // 🌟 Cookie, Authorization header зөвшөөрөх
+// }));
+
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: { origin: '*' }
+});
+
+// --- Socket.IO logic ---
+io.on('connection', (socket) => {
+  // Client бүр issue-ийн id-р join хийж орно
+  socket.on('joinIssue', (issueId) => {
+    socket.join(`issue_${issueId}`);
+  });
+
+  // Comment нэмэгдсэнд push event
+  socket.on('newComment', ({ issueId, comment }) => {
+    // Бусад хэрэглэгчдэд broadcast
+    io.to(`issue_${issueId}`).emit('receiveComment', comment);
+  });
+});
+
+app.set('io', io);
+// Динамик origin шалгах
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (!origin) {
+      return callback(null, true); // Postman гэх мэт орж ирэхгүй үед зөвшөөрнө
+    }
+
+    if (origin.includes('localhost:3000')) {
+      callback(null, true); // ✅ Localhost web зөвшөөрнө
+    } else {
+      callback(null, true); // ✅ Бусад орчныг ч бас зөвшөөрнө (*)
+    }
+  },
+  credentials: true, // Authorization, Cookie дамжуулахыг зөвшөөрнө
+};
+
+app.use(cors(corsOptions));
+
+
 
 app.use(express.json());
 

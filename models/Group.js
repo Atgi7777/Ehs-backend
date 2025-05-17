@@ -45,4 +45,5 @@ Group.belongsTo(Organization, {
   as: 'organization',
 });
 
+
 module.exports = Group;

@@ -247,3 +247,38 @@ exports.getInstructionsByGroup = async (req, res) => {
     res.status(500).json({ message: 'Алдаа гарлаа.' });
   }
 };
+
+
+
+
+// GET /api/groups/:id
+exports.getGroupDetail = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const group = await Group.findByPk(id, {
+      include: [
+        {
+          model: EmployeeGroup,
+          as: 'members',
+          include: [
+            {
+              model: Employee,
+              as: 'employee',
+              attributes: ['id', 'name', 'email', 'phone' , 'profile'],
+            },
+          ],
+        },
+      ],
+    });
+
+    if (!group) {
+      return res.status(404).json({ message: 'Бүлэг олдсонгүй.' });
+    }
+
+    res.json(group);
+  } catch (error) {
+    console.error('Group дэлгэрэнгүй татахад алдаа:', error);
+    res.status(500).json({ message: 'Дотоод серверийн алдаа.' });
+  }
+};

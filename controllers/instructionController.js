@@ -4,13 +4,14 @@ const express = require("express");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const moment = require('moment-timezone'); // 👉 заавал суулгасан байх ёстой
+const { eachDayOfInterval, format, isSameDay } = require('date-fns');
 
 require("dotenv").config();
 const {
   Group,
   GroupInstruction,
   SafetyInstruction,
-  InstructionPage , InstructionHistory , Employee, Signature, Location , SafetyEngineer
+  InstructionPage , InstructionHistory , Employee, Signature, Location , SafetyEngineer , EmployeeGroup
 } = require("../models"); 
 const { Op } = require('sequelize');
 
@@ -174,7 +175,7 @@ exports.getSlidesByInstructionId = async (req, res) => {
 // ✅ Зааварчилгаа устгах (DELETE /api/instructions/:id)
 exports.deleteInstruction = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.params; 
 
     const instruction = await SafetyInstruction.findByPk(id);
     if (!instruction) return res.status(404).json({ message: 'Зааварчилгаа олдсонгүй' });
@@ -262,6 +263,74 @@ exports.updateInstructionWithPages = async (req, res) => {
 };
 
 
+// exports.updateInstructionWithMedia = async (req, res) => {
+//   const id = req.params.id;
+//   const { title, number, description, start_date, end_date, pages } = JSON.parse(req.body.data);
+
+//   try {
+//     await SafetyInstruction.update({ title, number, description, start_date, end_date }, { where: { id } });
+
+//     await InstructionPage.destroy({ where: { safetyInstruction_id: id } });
+
+//     const newPages = [];
+
+//     for (let i = 0; i < pages.length; i++) {
+//       newPages.push({
+//         page_order: i + 1,
+//         description: pages[i].description,
+//         location: pages[i].location,
+//         safetyInstruction_id: id,
+//         image_url: req.files[`image_url_${i}`]?.[0]?.path || '',
+//         audio_url: req.files[`audio_url_${i}`]?.[0]?.path || '',
+//         video_url: req.files[`video_url_${i}`]?.[0]?.path || '',
+//       });
+//     }
+
+//     await InstructionPage.bulkCreate(newPages);
+
+//     res.json({ message: 'Инструкция болон медиа амжилттай хадгалагдлаа' });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: 'Алдаа гарлаа' });
+//   }
+// };
+
+// exports.updateInstructionWithMedia = async (req, res) => {
+//   const id = req.params.id;
+//   const { title, number, description, start_date, end_date, pages } = JSON.parse(req.body.data);
+
+//   try {
+//     await SafetyInstruction.update({ title, number, description, start_date, end_date }, { where: { id } });
+
+//     await InstructionPage.destroy({ where: { safetyInstruction_id: id } });
+
+//     const newPages = [];
+
+//     for (let i = 0; i < pages.length; i++) {
+//       const imageFile = req.files.find((f) => f.fieldname === `image_url_${i}`);
+//       const audioFile = req.files.find((f) => f.fieldname === `audio_url_${i}`);
+//       const videoFile = req.files.find((f) => f.fieldname === `video_url_${i}`);
+
+//       newPages.push({
+//         page_order: i + 1,
+//         description: pages[i].description,
+//         location: pages[i].location,
+//         safetyInstruction_id: id,
+//         image_url: imageFile ? imageFile.path : '',
+//         audio_url: audioFile ? audioFile.path : '',
+//         video_url: videoFile ? videoFile.path : '',
+//       });
+//     }
+
+//     await InstructionPage.bulkCreate(newPages);
+
+//     res.json({ message: 'Инструкция болон медиа амжилттай хадгалагдлаа' });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: 'Алдаа гарлаа' });
+//   }
+// };
+
 exports.updateInstructionWithMedia = async (req, res) => {
   const id = req.params.id;
   const { title, number, description, start_date, end_date, pages } = JSON.parse(req.body.data);
@@ -274,14 +343,18 @@ exports.updateInstructionWithMedia = async (req, res) => {
     const newPages = [];
 
     for (let i = 0; i < pages.length; i++) {
+      const imageFile = req.files.find((f) => f.fieldname === `image_url_${i}`);
+      const audioFile = req.files.find((f) => f.fieldname === `audio_url_${i}`);
+      const videoFile = req.files.find((f) => f.fieldname === `video_url_${i}`);
+
       newPages.push({
         page_order: i + 1,
         description: pages[i].description,
         location: pages[i].location,
         safetyInstruction_id: id,
-        image_url: req.files[`image_url_${i}`]?.[0]?.path || '',
-        audio_url: req.files[`audio_url_${i}`]?.[0]?.path || '',
-        video_url: req.files[`video_url_${i}`]?.[0]?.path || '',
+        image_url: imageFile ? imageFile.path : pages[i].image_url || '',
+        audio_url: audioFile ? audioFile.path : pages[i].audio_url || '',
+        video_url: videoFile ? videoFile.path : pages[i].video_url || '',
       });
     }
 
@@ -293,7 +366,6 @@ exports.updateInstructionWithMedia = async (req, res) => {
     res.status(500).json({ message: 'Алдаа гарлаа' });
   }
 };
-
 
 
 
@@ -409,5 +481,188 @@ exports.getInstructionHistoryDetail = async (req, res) => {
   } catch (error) {
     console.error('⚠️ Дэлгэрэнгүй түүх татахад алдаа:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+exports.getInstructionHistoriesByDateRange = async (req, res) => {
+  try {
+    const { employee_id, start_date, end_date } = req.query;
+
+    if (!employee_id || !start_date || !end_date) {
+      return res.status(400).json({ message: 'employee_id, start_date, end_date шаардлагатай.' });
+    }
+
+    // Монголын цагаар хөрвүүлж UTC болгоно
+    const start = moment.tz(start_date, 'Asia/Ulaanbaatar').startOf('day').utc().toDate();
+    const end = moment.tz(end_date, 'Asia/Ulaanbaatar').endOf('day').utc().toDate();
+
+    const histories = await InstructionHistory.findAll({
+      where: {
+        employee_id,
+        viewed_at: {
+          [Op.between]: [start, end],
+        },
+      },
+      include: [
+        {
+          model: Employee,
+          as: 'employee',
+          attributes: ['id', 'name', 'position'],
+        },
+        {
+          model: SafetyInstruction,
+          as: 'instruction',
+          attributes: ['id', 'title', 'description', 'start_date', 'end_date'],
+          include: [
+            {
+              model: SafetyEngineer,
+              as: 'safetyEngineer',
+              attributes: ['id', 'name', 'email', 'phone'],
+            },
+          ],
+        },
+        {
+          model: Signature,
+          as: 'signature',
+          attributes: ['id', 'signature_photo', 'signed_at'],
+        },
+        {
+          model: Location,
+          as: 'location',
+          attributes: ['id', 'location_detail', 'latitude', 'longitude'],
+        },
+      ],
+      order: [['viewed_at', 'ASC']],
+    });
+
+    return res.status(200).json(histories);
+  } catch (error) {
+    console.error('Түүх татахад алдаа:', error);
+    return res.status(500).json({ message: 'Түүх авахад алдаа гарлаа', error: error.message });
+  }
+};
+
+
+exports.getInstructionsWithStatus = async (req, res) => {
+  try {
+    const { employee_id, start_date, end_date } = req.query;
+
+    if (!employee_id || !start_date || !end_date) {
+      return res.status(400).json({ message: 'employee_id, start_date, end_date шаардлагатай.' });
+    }
+
+    const start = new Date(start_date);
+    const end = new Date(end_date);
+    const days = eachDayOfInterval({ start, end }); // ⬅️ Өдрүүдийг гаргах
+
+    // 1. Ажилтны бүлгүүд
+    const employeeGroups = await EmployeeGroup.findAll({
+      where: { employee_id },
+      attributes: ['group_id'],
+    });
+    const groupIds = employeeGroups.map((eg) => eg.group_id);
+    if (groupIds.length === 0) return res.json([]);
+
+    // 2. Бүлгийн зааварчилгаа
+    const groupInstructions = await GroupInstruction.findAll({
+      where: {
+        group_id: { [Op.in]: groupIds },
+      },
+      attributes: ['safetyInstruction_id'],
+    });
+    const instructionIds = groupInstructions.map((gi) => gi.safetyInstruction_id);
+    if (instructionIds.length === 0) return res.json([]);
+
+    // 3. Зааварчилгаанууд (хугацаагаар шүүж)
+    const allInstructions = await SafetyInstruction.findAll({
+      where: {
+        id: { [Op.in]: instructionIds },
+        status: 'active',
+        start_date: { [Op.lte]: end },
+        end_date: { [Op.gte]: start },
+      },
+      include: [
+        {
+          model: SafetyEngineer,
+          as: 'safetyEngineer',
+          attributes: ['id', 'name', 'email', 'phone'],
+        },
+      ],
+    });
+
+    if (allInstructions.length === 0) return res.json([]);
+
+    // 4. Бүх үзсэн түүх
+    const viewedHistories = await InstructionHistory.findAll({
+      where: {
+        employee_id,
+        instruction_id: { [Op.in]: allInstructions.map((i) => i.id) },
+        viewed_at: { [Op.between]: [start, end] },
+      },
+      include: [
+        {
+          model: SafetyInstruction,
+          as: 'instruction',
+          include: [
+            {
+              model: SafetyEngineer,
+              as: 'safetyEngineer',
+              attributes: ['id', 'name', 'email', 'phone'],
+            },
+          ],
+        },
+        {
+          model: Signature,
+          as: 'signature',
+          attributes: ['signed_at', 'signature_photo'],
+        },
+        {
+          model: Location,
+          as: 'location',
+          attributes: ['location_detail'],
+        },
+      ],
+    });
+
+    const result = [];
+
+    for (const instruction of allInstructions) {
+      for (const day of days) {
+        // тухайн өдөр, тухайн зааварчилгааг үзсэн эсэх
+        const match = viewedHistories.find(
+          (h) =>
+            h.instruction_id === instruction.id &&
+            isSameDay(new Date(h.viewed_at), day)
+        );
+
+        if (match) {
+          result.push({
+            instruction: match.instruction,
+            date: format(day, 'yyyy-MM-dd'),
+            viewed: true,
+            signature: match.signature,
+            location: match.location,
+            viewed_at: match.viewed_at,
+          });
+        } else {
+          result.push({
+            instruction,
+            date: format(day, 'yyyy-MM-dd'),
+            viewed: false,
+            signature: null,
+            location: null,
+            viewed_at: null,
+          });
+        }
+      }
+    }
+
+    // Огноогоор эрэмбэлэх
+    result.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    return res.json(result);
+  } catch (err) {
+    console.error('📛 Зааварчилгаа өдөр өдөрт шүүхэд алдаа:', err);
+    return res.status(500).json({ message: 'Серверийн алдаа', error: err.message });
   }
 };

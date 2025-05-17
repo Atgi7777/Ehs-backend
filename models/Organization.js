@@ -13,7 +13,7 @@ const Organization = sequelize.define('Organization', {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  phone: {
+  phone: { 
     type: DataTypes.STRING,
     allowNull: true,
   
@@ -53,6 +53,7 @@ Organization.belongsTo(SystemAdmin, {
   foreignKey: 'system_admin_id',
   as: 'systemAdmin',
 });
+
 
 
 module.exports = Organization;

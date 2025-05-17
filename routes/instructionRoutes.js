@@ -14,7 +14,7 @@ router.get('/:id/shared-groups' , instructionController.getSharedGroups);
 router.get('/groups/:groupId/instructions', instructionController.getInstructionsByGroup);
 
 router.delete('/:id/unshare-group/:groupId', instructionController.unshareGroupFromInstruction);
-
+ 
 // PUT /api/instructions/:id
 
 
@@ -36,16 +36,18 @@ router.put(
   );
 
 
-  // Handle multiple files per page using fields
-const fields = [
-    { name: 'image_url_0' }, { name: 'audio_url_0' }, { name: 'video_url_0' },
-    { name: 'image_url_1' }, { name: 'audio_url_1' }, { name: 'video_url_1' },
-    { name: 'image_url_2' }, { name: 'audio_url_2' }, { name: 'video_url_2' },
-    // нэмэх шаардлагатай бол динамикжуулж болно
-  ];
-  
-  router.put('/:id/with-media', upload.fields(fields), instructionController.updateInstructionWithMedia);
-  
+// const fields = [];
+// for (let i = 0; i < 50; i++) { 
+//   fields.push({ name: `image_url_${i}` });
+//   fields.push({ name: `audio_url_${i}` });
+//   fields.push({ name: `video_url_${i}` });
+// }
+
+// // router
+// router.put('/:id/with-media', upload.fields(fields), instructionController.updateInstructionWithMedia);
+
+router.put('/:id/with-media', upload.any(), instructionController.updateInstructionWithMedia);
+
   // 📋 Өдөр сонгож түүхүүдийг авах
 router.get('/history', middleware , instructionController.getInstructionHistoriesByDate);
 
@@ -53,5 +55,12 @@ router.get('/history', middleware , instructionController.getInstructionHistorie
 
 // 📜 Нэг түүх дэлгэрэнгүй авах
 router.get('/history/:id', instructionController.getInstructionHistoryDetail);
+
+
+
+router.get('/employeeHistory', instructionController.getInstructionHistoriesByDateRange);
+
+
+router.get('/employee/group-instructions', instructionController.getInstructionsWithStatus);
 
 module.exports = router;
