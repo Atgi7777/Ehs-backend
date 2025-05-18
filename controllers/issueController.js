@@ -286,6 +286,7 @@ exports.deleteIssue = async (req, res) => {
     res.status(500).json({ message: 'Issue устгах үед алдаа гарлаа' });
   }
 };
+// controllers/issueController.js
 exports.countEmployeeIssues = async (req, res) => {
   try {
     const { employeeId } = req.params;
@@ -293,9 +294,9 @@ exports.countEmployeeIssues = async (req, res) => {
       return res.status(400).json({ error: 'employeeId required' });
     }
 
-    // assigned_to талбарт ажилтны ID-гаар тоолох
+    // reporter_id баганаар тоолно
     const count = await Issue.count({
-      where: { assigned_to: employeeId }
+      where: { reporter_id: employeeId }
     });
 
     res.json({ count });
@@ -305,4 +306,5 @@ exports.countEmployeeIssues = async (req, res) => {
   }
 };
 
+ 
 

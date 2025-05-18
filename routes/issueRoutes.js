@@ -118,6 +118,15 @@ router.get('/count/:employeeId', issueController.countEmployeeIssues);
 
 
 
+router.get('/count/org/:organizationId', async (req, res) => {
+  const { organizationId } = req.params;
+  try {
+    const count = await Issue.count({ where: { organization_id: organizationId } });
+    res.json({ count });
+  } catch (e) {
+    res.status(500).json({ count: 0 });
+  }
+});
 
 
 

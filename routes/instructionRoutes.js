@@ -3,6 +3,7 @@ const router = express.Router();
 const instructionController = require('../controllers/instructionController');
 const upload = require('../middleware/upload');
 const middleware = require('../middleware/auth');
+const { SafetyInstruction } = require('../models');
 
 router.get('/:id/slides', instructionController.getSlidesByInstructionId);
 
@@ -62,5 +63,16 @@ router.get('/employeeHistory', instructionController.getInstructionHistoriesByDa
 
 
 router.get('/employee/group-instructions', instructionController.getInstructionsWithStatus);
+
+
+router.get('/count/created-by/:userId', async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const count = await SafetyInstruction.count({ where: { safetyEngineer_id: userId } });
+    res.json({ count });
+  } catch (e) {
+    res.status(500).json({ count: 0 });
+  }
+});
 
 module.exports = router;

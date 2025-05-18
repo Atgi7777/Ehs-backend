@@ -25,11 +25,7 @@ const SafetyTraining = sequelize.define("SafetyTraining", {
     type: DataTypes.INTEGER,
     allowNull: true,
   },
-  type: {
-    type: DataTypes.ENUM("internal", "external"),
-    allowNull: false,
-    defaultValue: "internal",
-  },
+ 
   created_at: {
     type: DataTypes.DATE,
     defaultValue: Sequelize.NOW,
@@ -37,7 +33,13 @@ const SafetyTraining = sequelize.define("SafetyTraining", {
   updated_at: {
     type: DataTypes.DATE,
     defaultValue: Sequelize.NOW,
-  }
+  }, 
+ poster: {
+  type: DataTypes.JSON,
+  allowNull: true,
+}
+
+
 }, {
   timestamps: false,
   createdAt: "created_at",

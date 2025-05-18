@@ -18,19 +18,23 @@ const safetyRoutes = require('./routes/safetyRoutes');
 const instructionRoutes = require('./routes/instructionRoutes');
 const groupRoutes = require('./routes/groupRoutes');
 const employeeRoutes = require('./routes/employeeRoutes');
-app.use(express.json()); 
+
 const signatureRoutes = require('./routes/signatures'); // ✍️ Signature route
 const issueRoutes = require('./routes/issueRoutes');
 const { Server } = require('socket.io');
+const safetyTrainingRoutes = require("./routes/safetyTraining");
 
 
 const http = require('http');
 
-
+app.use(express.json()); 
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use(express.json({ limit: '10mb' }));  // Base64 зураг явуулах тул payload ихсэх магадлалтай
+app.use(express.urlencoded({ extended: true }));
 
  
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+// app.use(bodyParser.json());
+// app.use(bodyParser.urlencoded({ extended: true }));
 // Database connection
 sequelize.authenticate()
   .then(() => console.log('✅ Database connected'))
@@ -114,8 +118,7 @@ app.listen(5050, '0.0.0.0', () => {
 
 
 // Static folder
-app.use('/uploads', express.static('uploads'));
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// app.use('/uploads', express.static('uploads'));
 
 
 // Routes
@@ -144,8 +147,8 @@ app.use('/api/employee' , employeeRoutes);
 
 app.use('/api/instruction', instructionRoutes);
 
- app.use('/api', issueRoutes); // 👈 энд заавал холбоно
+ app.use('/api', issueRoutes); 
 
 
-app.use(express.json({ limit: '10mb' }));  // Base64 зураг явуулах тул payload ихсэх магадлалтай
 app.use('/api/signatures', signatureRoutes);
+app.use("/api/safety-trainings", safetyTrainingRoutes);
