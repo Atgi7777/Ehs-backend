@@ -3,7 +3,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const {
-  Employee,EmployeeGroup , Group 
+  Employee,EmployeeGroup , Group , TrainingAttendance , InstructionHistory
 } = require("../models"); 
 const upload = require("../middleware/upload");
 
@@ -147,3 +147,28 @@ exports.getEmployeeGroups = async (req, res) => {
   }
 };
 
+exports.getProfileStats = async (req, res) => {
+  try {
+    const employeeId = req.user.id; // JWT-ээс employee_id олно
+    // Зааварчилгаа үзсэн тоо
+    const instructionsCount = await InstructionHistory.count({
+      where: {
+        employee_id: employeeId,
+        instruction_status: 'viewed'
+      }
+    });
+    // Сургалтанд оролцсон тоо
+    const trainingCount = await TrainingAttendance.count({
+      where: {
+        employee_id: employeeId,
+        attended: true
+      }
+    });
+    res.json({
+      instructionsCount,
+      trainingCount
+    });
+  } catch (e) {
+    res.status(500).json({ error: 'Server error' });
+  }
+};

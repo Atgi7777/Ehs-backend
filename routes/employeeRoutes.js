@@ -21,5 +21,7 @@ router.get('/count/org/:organizationId', async (req, res) => {
   }
 });
 
+router.get('/me-stats', authenticateToken, employeeController.getProfileStats);
+
 
 module.exports = router;

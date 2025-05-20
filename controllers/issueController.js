@@ -158,9 +158,10 @@ exports.updateIssueStatus = async (req, res) => {
 
 
 
+
 exports.getOrganizationIncidents = async (req, res) => {
   try {
-    const user = req.user; 
+    const user = req.user;
     const organizationId = user.organization_id;
 
     if (!organizationId) {
@@ -170,8 +171,13 @@ exports.getOrganizationIncidents = async (req, res) => {
     const incidents = await Issue.findAll({
       where: { organization_id: organizationId },
       order: [['created_at', 'DESC']],
-      // include: [] - ямар ч join хийхгүй!
-      // attributes: undefined - бүх талбарыг авна
+      include: [
+        {
+          model: Employee,              // ⬅️ Энэ нь User model байх ёстой (reporter_id FK)
+          as: 'reporter',           // ⬅️ Association alias (Issue.belongsTo(User, { as: 'reporter', foreignKey: 'reporter_id' }))
+          attributes: ['name'], // хүссэн талбараа бичиж болно
+        }
+      ]
     });
 
     res.json(incidents);
@@ -181,8 +187,7 @@ exports.getOrganizationIncidents = async (req, res) => {
   }
 };
 
-
-
+ 
 exports.getReportsChartData = async (req, res) => {
   try {
     const user = req.user;
