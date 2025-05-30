@@ -5,7 +5,7 @@ require('dotenv').config();
 const { SystemAdmin, Organization, Employee, OrganizationAdmin , SafetyEngineer , Issue} = require('../models');
 
 
- const { Op } = require('sequelize'); // 🌟 Op-г импортлоно
+ const { Op } = require('sequelize'); 
 
 exports.getDashboardStats = async (req, res) => {
   try {

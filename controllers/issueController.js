@@ -204,7 +204,7 @@ exports.getReportsChartData = async (req, res) => {
         [Sequelize.fn('COUNT', Sequelize.col('id')), 'count'],
       ],
       group: ['date'],
-      order: [['date', 'ASC']],
+      // order: [['date', 'ASC']],
       raw: true,
     });
 
